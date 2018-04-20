@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<meta charset="utf-8">
+		<title>Don't Break Me</title>
+	</head>
+	<body>
+		<div class="container">
+
+		</div>
+
+	</body>
+</html>
+
+
+
+
+<script>
+	var address = "192.168.181.2"
+	$.ajax({ 
+	    type: 'POST',
+	    url: 'http://'+address+':9000/loadData',
+	    crossDomain: true,
+	    success: function (data) {
+	    	jsonData = JSON.parse(data);
+	    	jsonData.forEach(function(elementData){
+	    		generateView('Ventola di raffreddamento', '1C', elementData['datiX'], elementData['datiY'], elementData['datiZ'], elementData['statoAttuale']);
+	    	}) 
+	    },
+	    error: function(){
+	    	alert("ERROR : Cannot comunicate with the server")
+	    }
+	});
+
+
+
+
+
+</script>

@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <link rel="stylesheet" href="css/style.css">
+    
+    <!-- jQuery library -->
+    <script src="js/jquery.js"></script>
+    <!-- Latest compiled JavaScript -->
+    <script src="js/bootstrap.min.js"></script> 
+    <script src="js/plotly.js"></script>
+    <title>Unbreakable</title>
+  </head>
+  <body>
+  		<div id="logoTop">
+  			<img src="logo.png">
+  		</div>
+        <ul class="nav nav-tabs" id="tabs">
+        </ul>
+        
+        <div class="tab-content" id="tabContent">
+        </div>
+
+        <footer>@FBK Prom Camp 2018<br/>Gruppo di sviluppo 2</footer>
+  
+    <script>
+        var globalData;
+        var address = "192.168.68.104";
+
+        /*
+        function calcMinAndMax(data) {
+            var maxValues = {
+                'x':100000000,
+                'y':100000000,
+                'z':100000000
+                };
+
+            var minValues = {
+                'x':-100000000,
+                'y':-100000000,
+                'z':-100000000
+                };
+
+            data.forEach(function(elementData){
+                maxValues['x'] = (Math.max(elementData['datiX'])>maxValues['x'])? Math.max(elementData['datiX']) : maxValues['x'];
+                minValues['x'] = (Math.min(elementData['datiX'])<minValues['x'])? Math.min(elementData['datiX']) : minValues['x'];
+                maxValues['y'] = (Math.max(elementData['datiY'])>maxValues['y'])? Math.max(elementData['datiY']) : maxValues['y'];
+                minValues['y'] = (Math.min(elementData['datiY'])<minValues['y'])? Math.min(elementData['datiY']) : minValues['y'];
+                maxValues['z'] = (Math.max(elementData['datiZ'])>maxValues['z'])? Math.max(elementData['datiZ']) : maxValues['z'];
+                minValues['z'] = (Math.min(elementData['datiZ'])<minValues['z'])? Math.min(elementData['datiZ']) : minValues['z'];
+            })
+
+            return {'min': minValues, 'max': maxValues};
+        }*/
+
+
+        function generateView(n, name, sector, dataX, dataY, dataZ, state, refData) {
+            var nameId = name.replace(/ /g,"-").toLowerCase();
+
+            tabs = $('#tabs')
+            tabs.append("<li "+((n==1)? 'class=\'active\'' : '')+"><a data-toggle='tab' href='#"+nameId+"'>"+name+"</a></li>")
+
+            tabContent = $('#tabContent');
+            tabContent.append("<div id="+nameId+" class='tab-pane fade in active container-fluid'>")
+
+            tabContentDiv = $('#'+nameId);
+            tabContentDiv.append("<h1 class='text-center'>"+name+"</h1>");
+            tabContentDiv.append("<h3 class='text-center'>Settore: "+sector+"</h3>");
+            
+            tabContentDiv.append(`<div id='state-div' class="state-div state-`+nameId+` `+state+`-state">`+state.toUpperCase()+`</div>`);
+            //console.log(name+"  "+state)
+            //tabContentDiv.append(`<p id="info">Stato di rottura previsto in 35 giorni circa</p>`);
+
+
+            generateScatter3D({'dataX':dataX, 'dataY':dataY, 'dataZ':dataZ}, nameId, state, refData); 
+            generateLineGraph(dataX, nameId, "x");
+            generateLineGraph(dataY, nameId, "y");
+            generateLineGraph(dataZ, nameId, "z");
+
+            setInterval(function(){
+                $.ajax({ 
+                    type: 'POST',
+                    url: 'http://'+address+':9000/dataUpdate',
+                    data: { "nomeComponente" : name },
+                    crossDomain: true,
+                    success: function (data) {
+                        var jsonData = JSON.parse(data);
+                        //console.log(jsonData['datiX'])
+                        //minAndMaxValues = calcMinAndMax(jsonData)
+                        updateState(nameId, jsonData['statoAttuale']);
+                        updateScatter3D(jsonData['datiX'], jsonData['datiY'], jsonData['datiZ'], nameId, jsonData['statoAttuale']); 
+                        updateLineGraph(jsonData['datiX'], nameId, "x"); 
+                        updateLineGraph(jsonData['datiY'], nameId, "y"); 
+                        updateLineGraph(jsonData['datiZ'], nameId, "z"); 
+                    },
+                    error: function(){
+                        console.log("ERROR : Cannot comunicate with the server")
+                    }
+                });
+            }, 500)
+        }
+
+
+        function loadData(refData){
+            $.ajax({ 
+                type: 'POST',
+                url: 'http://'+address+':9000/loadData',
+                crossDomain: true,
+                success: function (data) {
+                    var jsonData = JSON.parse(data);
+                    //console.log(jsonData)
+                    globalData = jsonData;
+                    //console.log(jsonData)
+                    var n = 0;
+                    //minAndMaxValues = calcMinAndMax(jsonData);
+
+                    jsonData.forEach(function(elementData){
+                        n++;      
+                        generateView(n, elementData['nome'], elementData['settore'], elementData['datiX'], elementData['datiY'], elementData['datiZ'], elementData['statoAttuale'], refData);
+                    }) 
+                },
+                error: function(){
+                    console.log("ERROR : Cannot comunicate with the server")
+                }
+            });
+        }
+
+        function getStateColor(state){
+            if(state=="buono"){
+                return 'rgba(46, 213, 115, 1)';
+            }
+            else if(state=="danneggiato"){
+                return 'rgba(255, 165, 2, 1)';
+            }
+            else if(state=="reference"){
+                return 'rgba(116, 185, 255, 1)';
+            }
+            else{
+                return 'rgba(214, 48, 49, 1)';
+            }
+        }
+
+        function updateState(nameId, state) {
+            //console.log(nameId+": "+state)
+            $('#state-'+nameId).removeClass();
+            $('#state-'+nameId).addClass("state-div "+state+"-state");
+            $('#state-'+nameId).html(state.toUpperCase());
+        }
+
+        function updateScatter3D(dataX, dataY, dataZ, nameId, state){
+
+            clr = getStateColor(state);
+
+            gDiv = $('#scatter-'+nameId).get(0)
+
+            gDiv.data[0].x = dataX;
+            gDiv.data[0].y = dataY;
+            gDiv.data[0].z = dataZ;
+            gDiv.data[0].marker['color'] = clr;
+            gDiv.data[0].marker['line']['color'] = clr;
+
+            Plotly.redraw(gDiv);
+        }
+
+        function generateScatter3D(data, nameId, state, refData){
+
+            clr = getStateColor(state);
+
+            var trace = {
+                x:data['dataX'], y:data['dataY'], z:data['dataZ'],
+                mode: 'markers',
+                marker: {
+                    size: 2,
+                    color: clr,
+                    line: {
+                        color: clr,
+                        width: 0.5
+                    },
+                    opacity: 0.8
+                },
+                type: 'scatter3d'
+            };
+            var traceReference = {
+                x:refData['datiX'], y:refData['datiY'], z:refData['datiZ'],
+                mode: 'markers',
+                marker: {
+                    size: 2,
+                    color: getStateColor("reference"),
+                    line: {
+                        color: getStateColor("reference"),
+                        width: 0.5
+                    },
+                    opacity: 0.8
+                },
+                type: 'scatter3d'
+            };
+
+            var dataTrace = [trace, traceReference];
+            var layout = {
+                margin: {
+                    l: 0,
+                    r: 0,
+                    b: 0,
+                    t: 30
+                },
+                xaxis: {
+                    nticks: 9
+                },
+                yaxis: {
+                    nticks: 9
+                },
+                zaxis: {
+                    nticks: 9
+                },
+                title: 'Dispersione dei punti'
+            };
+
+            tabContentDiv.append("<div class='row'><div id='scatter-"+nameId+"' class='scatter-div col-sm-12 col-md-6 col-lg-6'></div></div>");
+            //console.log(nameId)
+            Plotly.newPlot('scatter-'+nameId, dataTrace, layout);
+        }
+
+        function updateLineGraph(data, nameId, axis){
+            gDiv = $('#linegraph-'+nameId+"-"+axis).get(0)
+            gDiv.data[0].y = data;
+            Plotly.redraw(gDiv)
+        }
+
+        function generateLineGraph(data, nameId, axis) {
+            var trace = {
+                    x: Array.apply(null, {length: data.length}).map(Function.call, Number),
+                    y: data,
+                    type: 'scatter'
+                };
+
+            var dataTrace = [trace];
+            var layout = {
+                title: "Vibrazione Asse " + axis.toUpperCase(),
+                margin: {
+                    l: 40,
+                    r: 10,
+                    b: 40,
+                    t: 30
+                }
+            }
+
+            $('#scatter-'+nameId).parent().append("<div id='linegraph-"+nameId+"-"+axis+"' class='linegraph-div col-sm-12 col-md-6 col-lg-6'></div>");
+            Plotly.newPlot('linegraph-'+nameId+"-"+axis, dataTrace, layout);
+
+        }
+
+        $(document).ready( function() {
+            $.ajax({ 
+                type: 'POST',
+                url: 'http://'+address+':9000/loadRefData',
+                crossDomain: true,
+                success: function (data) {
+                    refData = JSON.parse(data);
+                    console.log(refData)
+                    loadData(refData[0]);
+                },
+                error: function(){
+                    console.log("ERROR : Cannot comunicate with the server")
+                }
+            });
+
+			
+        });
+    </script>
+	</body>
+</html>

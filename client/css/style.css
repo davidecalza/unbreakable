@@ -1,0 +1,62 @@
+body{
+    overflow-x: hidden;
+}
+
+footer{
+    text-align:center;
+    margin:200px auto;
+}
+
+.state-div {
+    background: black;
+    color: white;
+    padding: 10px;
+    border-radius: 5px;
+    border-bottom: 3px solid white;
+    width:200px;
+    margin:40px auto 70px;
+    text-align: center;
+}
+
+.nav-tabs{
+    margin-top:20px;
+}
+
+div#logoTop img{
+    height:40px;
+    margin-right:20px;
+    float:right;
+}
+
+p#info{
+    margin:10px auto 60px;
+    text-align: center;
+}
+
+h3{
+    color:#999;
+}
+
+.linegraph-div {
+    height: 200px !important;
+}
+
+.scatter-div {
+    height: 600px !important;
+}
+
+.rotto-state {
+    background-color: rgba(214, 48, 49, 1);
+}
+
+.danneggiato-state {
+    background-color: rgba(255, 165, 2, 1);
+}
+
+.buono-state {
+    background-color: rgba(46, 213, 115, 1);
+}
+
+.svg-container {
+    width: 100% !important;
+}
