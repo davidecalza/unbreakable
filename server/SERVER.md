@@ -1,5 +1,16 @@
-# Come far partire il server
-1. Aprire **provaMosquito.py** ed avviarlo.
-2. Aprire **server.py** ed avviarlo.
-3. Per addrestrare la rete usare **training.py**, durante l'addestramento **server.py** e **provaMosquito.py** devono essere arrestati.
-gli altri file sono necessari per le librerie.
+# Server
+## How to start the server
+1. Run **provaMosquito.py**
+```
+python provaMosquito.py
+```
+2. Open another terminal and run **server.py**
+```
+python server.py
+```
+## How to train data
+Run **training.py**
+```
+python training.py
+```
+During the training process, **server.py** and **provaMosquito.py** must be killed
