@@ -14,7 +14,7 @@ Compared to **on-breakdown maintenance**:
 * execute the maintenance when the payload of the system is minimal
 * minimize damage
 
-**General benefits**
+**General benefits**:
 * money saving
 * real time status of components
 * prediction of the breakdown moment
