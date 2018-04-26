@@ -18,3 +18,20 @@ Compared to **on-breakdown maintenance**:
 * money saving
 * real time status of components
 * prediction of the breakdown moment
+
+## Partners
+* [Fondazione Bruno Kessler](https://www.fbk.eu/en/)
+* [Polo Meccatronica](http://www.polomeccatronica.it/)
+* [ProM Facility](https://promfacility.eu/)
+* [Trentino Sviluppo](https://www.trentinosviluppo.it/)
+
+## Schools
+* [ITT Marconi Rovereto](https://www.marconirovereto.it/)
+* [CFP Veronesi](http://www.cfpgveronesi.it/)
+* [ITT M.Buonarroti](http://www.buonarroti.tn.it/)
+* [Istituto Guetti TN](https://www.guetti.tn.it/)
+* [ITIS Marconi Verona](https://www.marconiverona.gov.it/portal/)
+* [CFP Tione](http://www.enaiptrentino.it/i_centri/cfp-tione)
+
+## Sponsors
+* [Fondazione Caritro](http://www.fondazionecaritro.it/)
